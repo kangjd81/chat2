@@ -36,7 +36,36 @@
                 <h6>{{item.name}} <span class="badge badge-info badge-pill">{{item.userCount}}</span></h6>
             </li>
         </ul>
+
+
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <h4>{{room_name}} <span class="badge badge-info badge-pill"><#--{{userCount}}--></span></h4>
+            </div>
+            <div class="col-md-6 text-right">
+                <a class="btn btn-primary btn-sm" href="/logout">로그아웃</a>
+                <a class="btn btn-info btn-sm" href="/chat/room">채팅방 나가기</a>
+            </div>
+        </div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <label class="input-group-text">내용</label>
+            </div>
+            <input type="text" class="form-control" v-model="message" v-on:keypress.enter="sendMessage('TALK')">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="button" @click="sendMessage('TALK')">보내기</button>
+            </div>
+        </div>
+        <ul class="list-group">
+
+        </ul>
+
+
     </div>
+
+
     <!-- JavaScript -->
     <script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
     <script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
@@ -47,6 +76,13 @@
                 room_name : '',
                 chatrooms: [
                 ]
+                ,
+                roomId: '',
+                roomName: '',
+                message: '',
+                messages: [],
+                token: '',
+                userCount: 0
             },
             created() {
                 this.findAllRoom();
