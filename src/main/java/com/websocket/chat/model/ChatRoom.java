@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -14,12 +16,17 @@ public class ChatRoom implements Serializable {
 
     private String roomId;
     private String name;
+    private List<String> users;
     private long userCount; // 채팅방 인원수
 
     public static ChatRoom create(String name) {
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.roomId = UUID.randomUUID().toString();
         chatRoom.name = name;
+        chatRoom.users = new ArrayList<>();
+/*        chatRoom.users.add("user");
+        chatRoom.users.add("admin");*/
+
         return chatRoom;
     }
 }
