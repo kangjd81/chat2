@@ -20,8 +20,8 @@ public class ChatRoomRepository {
     private HashOperations<String, String, ChatRoom> hashOpsChatRoom;
     @Resource(name = "redisTemplate")
     private HashOperations<String, String, String> hashOpsEnterInfo;
-/*    @Resource(name = "redisTemplate")
-    private ValueOperations<String, String> valueOps;*/
+//    @Resource(name = "redisTemplate")
+//    private ValueOperations<String, String> valueOps;
 
     // 모든 채팅방 조회
     public List<ChatRoom> findAllRoom() {
@@ -65,7 +65,8 @@ public class ChatRoomRepository {
     
 
     public void deleteAll(){
-        hashOpsEnterInfo.delete(ENTER_INFO);
+        List<ChatRoom> chatRooms = this.findAllRoom();
+        chatRooms.stream().forEach(chatRoom -> hashOpsChatRoom.delete(CHAT_ROOMS, chatRoom.getRoomId()));
     }
 
 
