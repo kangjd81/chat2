@@ -1,5 +1,6 @@
 package com.websocket.chat.controller;
 
+import com.websocket.chat.model.ChatMessage;
 import com.websocket.chat.model.ChatRoom;
 import com.websocket.chat.model.LoginInfo;
 import com.websocket.chat.repo.ChatRoomRepository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Controller
@@ -28,8 +30,10 @@ public class ChatRoomController {
     @GetMapping("/rooms")
     @ResponseBody
     public List<ChatRoom> room() {
-        List<ChatRoom> chatRooms = chatRoomRepository.findAllRoom();
-        //chatRooms.stream().forEach(room -> room.setUserCount(chatRoomRepository.getUserCount(room.getRoomId())));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String name = auth.getName();
+        List<ChatRoom> chatRooms = chatRoomRepository.findRoomById(name);
+        chatRooms.stream().forEach(room -> room.setNotReadCount(room.getMessagesUnRead(name)));
         return chatRooms;
     }
 
@@ -52,5 +56,11 @@ public class ChatRoomController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String name = auth.getName();
         return LoginInfo.builder().name(name).token(jwtTokenProvider.generateToken(name)).build();
+    }
+
+    @GetMapping("/room/{roomId}")
+    @ResponseBody
+    public List<ChatMessage> roomData(@PathVariable String roomId) {
+        return chatRoomRepository.findMessageList(roomId);
     }
 }

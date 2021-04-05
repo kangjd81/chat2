@@ -1,12 +1,14 @@
 package com.websocket.chat.repo;
 
+import com.websocket.chat.model.ChatMessage;
 import com.websocket.chat.model.ChatRoom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -31,13 +33,7 @@ public class ChatRoomRepository {
     // 특정 채팅방 조회
     public List<ChatRoom> findRoomById(String userId) {
         List<ChatRoom> chatRooms = this.findAllRoom();
-        chatRooms.stream().filter(chatRoom -> {
-            if(chatRoom.getUsers().contains(userId)){
-                return false;
-            }else
-                return true;
-        });
-        return chatRooms;
+        return chatRooms.stream().filter(chatRoom -> chatRoom.getUsers().contains(userId)).collect(Collectors.toList());
     }
 
     // 채팅방 생성 : 서버간 채팅방 공유를 위해 redis hash에 저장한다.
@@ -46,6 +42,12 @@ public class ChatRoomRepository {
         hashOpsChatRoom.put(CHAT_ROOMS, chatRoom.getRoomId(), chatRoom);
         return chatRoom;
     }
+
+    public ChatRoom createChatRoom(ChatRoom chatRoom) {
+        hashOpsChatRoom.put(CHAT_ROOMS, chatRoom.getRoomId(), chatRoom);
+        return chatRoom;
+    }
+
 
     // 유저가 입장한 채팅방ID와 유저 세션ID 맵핑 정보 저장
     public void setUserEnterInfo(String userId, String roomId) {
@@ -85,5 +87,20 @@ public class ChatRoomRepository {
         return Optional.ofNullable(valueOps.decrement(USER_COUNT + "_" + roomId)).filter(count -> count > 0).orElse(0L);
     }*/
 
+
+    // 특정 채팅방 조회
+    public List<ChatMessage> findMessageList(String roomId) {
+        ChatRoom chatRoom = hashOpsChatRoom.get(CHAT_ROOMS, roomId);
+        List<ChatMessage> chatMessages = chatRoom.getChatMessages();
+        Collections.reverse(chatMessages);
+        return chatMessages;
+    }
+
+    // 대화 저장
+    public void saveChatMessage(ChatMessage chatMessage) {
+        ChatRoom chatRoom = hashOpsChatRoom.get(CHAT_ROOMS, chatMessage.getRoomId());
+        chatRoom.getChatMessages().add(chatMessage);
+        createChatRoom(chatRoom);
+    }
 
 }

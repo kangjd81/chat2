@@ -18,7 +18,7 @@ public class ChatRoom implements Serializable {
     private String name;
     private List<String> users;
     private List<ChatMessage> chatMessages;
-    private long userCount; // 채팅방 인원수
+    private long notReadCount; // 않읽은 메시지
 
     public static ChatRoom create(String name) {
         ChatRoom chatRoom = new ChatRoom();
@@ -27,5 +27,11 @@ public class ChatRoom implements Serializable {
         chatRoom.users = new ArrayList<>();
 
         return chatRoom;
+    }
+
+    public int getMessagesUnRead(String name){
+        return chatMessages.stream()
+                .filter(chatMessage -> !chatMessage.getSender().equals(name))
+                .mapToInt(ChatMessage::getRead).sum();
     }
 }

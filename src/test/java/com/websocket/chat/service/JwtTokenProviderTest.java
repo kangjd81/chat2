@@ -1,5 +1,6 @@
 package com.websocket.chat.service;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ public class JwtTokenProviderTest {
 //        assertEquals(nickname, decToken);
 //    }
 
-    @Test
+    @Test @Ignore
     public void createAndValidToken() {
         String id = "/sub/chat/room/3f0f893a-5849-4028-9755-8c6c8ab1846b";
         int lastIndex = id.lastIndexOf("/");

@@ -29,6 +29,8 @@ public class StompHandler implements ChannelInterceptor {
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+        log.info("StompCommand: {}", accessor.getCommand());
+        System.out.println(accessor);
 
         if (StompCommand.CONNECT == accessor.getCommand()) { // websocket 연결요청
             String jwtToken = accessor.getFirstNativeHeader("token");
@@ -37,17 +39,20 @@ public class StompHandler implements ChannelInterceptor {
             jwtTokenProvider.validateToken(jwtToken);
 
         } else if (StompCommand.SUBSCRIBE == accessor.getCommand()) { // 채팅룸 구독요청
+            //todo - 이미 구독한 사용자 필터링 검토 && 다른 채팅 구독 시 기존 룸 구독 제거
+            
             // header정보에서 구독 destination정보를 얻고, roomId를 추출한다.
             String roomId = chatService.getRoomId(Optional.ofNullable((String) message.getHeaders().get("simpDestination")).orElse("InvalidRoomId"));
             // 채팅방에 들어온 클라이언트 sessionId를 roomId와 맵핑해 놓는다.(나중에 특정 세션이 어떤 채팅방에 들어가 있는지 알기 위함)
-            //String userId = (String) message.getHeaders().get("simpSessionId");
+            String sessionId = (String) message.getHeaders().get("simpSessionId");
             String name = Optional.ofNullable((Principal) message.getHeaders().get("simpUser")).map(Principal::getName).orElse("UnknownUser");
+
             chatRoomRepository.setUserEnterInfo(name, roomId);
             // 채팅방의 인원수를 +1한다.
             //chatRoomRepository.plusUserCount(roomId);
             // 클라이언트 입장 메시지를 채팅방에 발송한다.(redis publish)
             chatService.sendChatMessage(ChatMessage.builder().type(ChatMessage.MessageType.ENTER).roomId(roomId).sender(name).build());
-            log.info("SUBSCRIBED {}, {}", name, roomId);
+            log.info("SUBSCRIBED {}, {}, {}", name, roomId, sessionId);
 
         } else if (StompCommand.DISCONNECT == accessor.getCommand()) { // Websocket 연결 종료
             // 연결이 종료된 클라이언트 sesssionId로 채팅방 id를 얻는다.
